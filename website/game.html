@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>City Escape</title>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script type="text/javascript">
+
+        var config = {
+            type: Phaser.AUTO,
+            width: 850,
+            height: 700,
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 510 },
+                    debug: false
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        };
+
+        var player;
+        var platforms;
+        var movingPlat;
+        var cursors;
+        var gameOver = false;
+
+        var game = new Phaser.Game(config);
+
+        function preload() {
+            this.load.image('City Foreground', 'assets/City Foreground.png');
+            this.load.image('City Background', 'assets/City Background.png');
+            this.load.image('ground', 'assets/roof.png');
+            this.load.image('floaties', 'assets/this.png')
+            this.load.image('floaties2', 'assets/yes.png')
+            this.load.image('sky', 'assets/sky.png');
+            this.load.spritesheet('guy', 'assets/guy.png', { frameWidth: 16, frameHeight: 16 });
+        }
+
+        function create() {
+            //  Background
+            this.add.image(425, 300, 'sky').setScale(1.8);
+            this.add.image(400, 300, 'City Background');
+            this.add.image(400, 300, 'City Foreground');
+
+            // This contains the ledges' physics
+            platforms = this.physics.add.staticGroup();
+
+            certainPlatform = this.physics.add.staticGroup();
+
+            //  Creating ground
+            platforms.create(400, 710, 'ground').setScale(10).refreshBody();
+
+            //  Creating ledges
+
+            certainPlatform.create(100, 175, 'floaties'); //top left
+            platforms.create(560, 120, 'floaties2');
+            platforms.create(300, 250, 'floaties2');
+            platforms.create(760, 193, 'floaties2');
+            platforms.create(700, 300, 'floaties2');
+            platforms.create(600, 400, 'floaties2'); // 3rd from bottom
+            platforms.create(500, 500, 'floaties2'); //2nd from bottom
+            platforms.create(590, 600, 'floaties2');
+            //platforms.create(x, y, name)
+
+            // Player and settings
+            player = this.physics.add.sprite(100, 450, 'guy').setScale(1.3);
+
+            //  Player physics
+            player.setBounce(.1);
+            player.setCollideWorldBounds(true);
+
+            // player animations, turning, walking left and walking right.
+            this.anims.create({
+                key: 'left',
+                frames: this.anims.generateFrameNumbers('guy', { start: 12, end: 15 }),
+                frameRate: 10,
+                repeat: -1
+            });
+
+            this.anims.create({
+                key: 'turn',
+                frames: [{ key: 'guy', frame: 0 }],
+                frameRate: 20
+            });
+
+            this.anims.create({
+                key: 'right',
+                frames: this.anims.generateFrameNumbers('guy', { start: 8, end: 11 }),
+                frameRate: 10,
+                repeat: -1
+            });
+
+            //  Input Events
+            cursors = this.input.keyboard.createCursorKeys();
+
+            //  Collide the player with the platforms
+            this.physics.add.collider(player, platforms);
+            this.physics.add.collider(player, certainPlatform, function collisionCallback(player, certainPlatform) {
+                (alert ('Level passed!'))})
+                // window.location.reload();
+        }
+
+        ////Cloud platform (moving)
+
+        CloudPlatform = function (game, x, y, key, group) {
+
+            if (typeof group === 'floaties') { group = game.world; }
+
+            Phaser.Sprite.call(this, game, x, y, key);
+
+            game.physics.arcade.enable(this);
+
+            this.anchor.x = 0.5;
+
+            this.body.customSeparateX = true;
+            this.body.customSeparateY = true;
+            this.body.allowGravity = false;
+            this.body.immovable = true;
+
+            this.playerLocked = false;
+
+            group.add(this);
+
+        };
+
+        var cloud1 = new CloudPlatform(this.game, 300, 450, 'cloud-platform', this.clouds);
+
+        function update() {
+
+            // if (gameOver == true) {
+            //     return alert('LEVEL PASSED');
+            // }
+
+            if (cursors.left.isDown) {
+                player.setVelocityX(-160);
+
+                player.anims.play('left', true);
+            }
+            else if (cursors.right.isDown) {
+                player.setVelocityX(160);
+
+                player.anims.play('right', true);
+            }
+            else {
+                player.setVelocityX(0);
+
+                player.anims.play('turn');
+            }
+
+            if (cursors.up.isDown && player.body.touching.down) {
+                player.setVelocityY(-330);
+
+
+            }
+        }
+
+
+
+    </script>
+
+</body>
+
+</html>
